@@ -1,0 +1,116 @@
+<patternDefinitions>
+<pattern name="patEventTypes"><![CDATA[barracuda WF|barracuda TR|barracuda AUDIT|barracuda NF|barracuda SYS]]></pattern>
+<pattern name="patStrLeftSB"><![CDATA[[^\[]*]]></pattern>
+<pattern name="patStrDoubleQ"><![CDATA[[^"]*]]></pattern>
+<pattern name="patHeader"><![CDATA[\w{3}\s+\d{2}\s+\d{2}:\d{2}:\d{2}\s+\w+\s+]]></pattern>
+</patternDefinitions>
+
+<eventFormatRecognizer><![CDATA[\b<:patEventTypes>\b]]></eventFormatRecognizer>
+
+<parsingInstructions>
+<collectFieldsByRegex src="$_rawmsg">
+<regex><![CDATA[<:gPatSyslogPRI><:patHeader><_year:gPatYear>-<_mon:gPatMonNum>-<_day:gPatDay>\s+<_time:gPatTime>\.\d+\s+<_tz:gPatTimeZone>\s+<_event:patEventTypes>\s+<_body:gPatMesgBody>]]></regex>
+</collectFieldsByRegex>
+
+<setEventAttribute attr="deviceTime">toDateTime($_mon, $_day, $_year, $_time, $_tz)</setEventAttribute>
+
+<choose>
+<when test="$_event = 'barracuda WF'">
+<setEventAttribute attr="eventType">Barracuda-WAF-WebFirewall</setEventAttribute>
+<collectAndSetAttrByPosWithNestedSep L1Sep=" " L2Sep='""' src="$_body">
+<attrPosMap attr="eventSeverity" pos="1"/>
+<attrPosMap attr="attackType" pos="2"/>
+<attrPosMap attr="srcIpAddr" pos="3"/>
+<attrPosMap attr="srcIpPort" pos="4"/>
+<attrPosMap attr="destIpAddr" pos="5"/>
+<attrPosMap attr="destIpPort" pos="6"/>
+<attrPosMap attr="ruleId" pos="7"/>
+<attrPosMap attr="ruleName" pos="8"/>
+<attrPosMap attr="eventAction" pos="9"/>
+<attrPosMap attr="secAction" pos="10"/>
+<attrPosMap attr="attackInfo" pos="11"/>
+<attrPosMap attr="httpMethod" pos="12"/>
+<attrPosMap attr="infoURL" pos="13"/>
+<attrPosMap attr="appTransportProto" pos="14"/>
+<attrPosMap attr="sessionId" pos="15"/>
+<attrPosMap attr="httpUserAgent" pos="16"/>
+<attrPosMap attr="httpProxyLogin" pos="19"/>
+<attrPosMap attr="httpReferrer" pos="20"/>
+</collectAndSetAttrByPosWithNestedSep>
+</when>
+<when test="$_event = 'barracuda TR'">
+<setEventAttribute attr="eventType">Barracuda-WAF-Access</setEventAttribute>
+<collectAndSetAttrByPosWithNestedSep L1Sep=" " L2Sep='""' src="$_body">
+<attrPosMap attr="serverIpAddr" pos="1"/>
+<attrPosMap attr="appPort" pos="2"/>
+<attrPosMap attr="srcIpAddr" pos="3"/>
+<attrPosMap attr="srcIpPort" pos="4"/>
+<attrPosMap attr="logID" pos="5"/>
+<attrPosMap attr="user" pos="6"/>
+<attrPosMap attr="httpMethod" pos="7"/>
+<attrPosMap attr="appTransportProto" pos="8"/>
+<attrPosMap attr="hostIpAddr" pos="9"/>
+<attrPosMap attr="httpVersion" pos="10"/>
+<attrPosMap attr="httpStatusCode" pos="11"/>
+<attrPosMap attr="sentBytes" pos="12"/>
+<attrPosMap attr="recvBytes" pos="13"/>
+<attrPosMap attr="cacheHit" pos="14"/>
+<attrPosMap attr="destIpAddr" pos="16"/>
+<attrPosMap attr="destIpPort" pos="17"/>
+<attrPosMap attr="deviceTime" pos="18"/>
+<attrPosMap attr="sessionId" pos="19"/>
+<attrPosMap attr="infoURL" pos="24"/>
+<attrPosMap attr="uriQuery" pos="25"/>
+<attrPosMap attr="httpReferrer" pos="26"/>
+<attrPosMap attr="httpCookie" pos="27"/>
+<attrPosMap attr="httpUserAgent" pos="28"/>
+<attrPosMap attr="httpProxyLogin" pos="31"/>
+</collectAndSetAttrByPosWithNestedSep>
+</when>
+<when test="$_event = 'barracuda AUDIT'">
+<setEventAttribute attr="eventType">Barracuda-WAF-Audit</setEventAttribute>
+<collectAndSetAttrByPos src="$_body" sep=" ">
+<attrPosMap attr="administratorName" pos="1"/>
+<attrPosMap attr="loginType" pos="2"/>
+<attrPosMap attr="srcIpAddr" pos="3"/>
+<attrPosMap attr="srcIpPort" pos="4"/>
+<attrPosMap attr="transactionType" pos="5"/>
+<attrPosMap attr="command" pos="6"/>
+<attrPosMap attr="activityType" pos="7"/>
+<attrPosMap attr="targetOsObjType" pos="8"/>
+<attrPosMap attr="targetOsObjName" pos="9"/>
+<attrPosMap attr="propName" pos="10"/>
+<attrPosMap attr="oldValue" pos="11"/>
+<attrPosMap attr="newValue" pos="12"/>
+<attrPosMap attr="details" pos="13"/>
+</collectAndSetAttrByPos>
+</when>
+<when test="$_event = 'barracuda SYS'">
+<setEventAttribute attr="eventType">Barracuda-WAF-System</setEventAttribute>
+<collectAndSetAttrByPos src="$_body" sep=" ">
+<attrPosMap attr="module" pos="1"/>
+<attrPosMap attr="logLevel" pos="2"/>
+<attrPosMap attr="eventId" pos="3"/>
+<attrPosMap attr="msg" pos="4"/>
+</collectAndSetAttrByPos>
+</when>
+<when test="$_event = 'barracuda NF'">
+<setEventAttribute attr="eventType">Barracuda-WAF-NetworkFirewall</setEventAttribute>
+<collectAndSetAttrByPos src="$_body" sep=" ">
+<attrPosMap attr="eventSeverity" pos="1"/>
+<attrPosMap attr="_protocol" pos="2"/>
+<attrPosMap attr="srcIpAddr" pos="3"/>
+<attrPosMap attr="srcIpPort" pos="4"/>
+<attrPosMap attr="destIpAddr" pos="5"/>
+<attrPosMap attr="destIpPort" pos="6"/>
+<attrPosMap attr="actionId" pos="7"/>
+<attrPosMap attr="administratorName" pos="8"/>
+<attrPosMap attr="details" pos="9"/>
+</collectAndSetAttrByPos>
+<setEventAttribute attr="ipProto">convertStrToIntIpProto($_protocol)</setEventAttribute>
+</when>
+<otherwise>
+<setEventAttribute attr="eventType">Barracuda-WAF-Generic</setEventAttribute>
+</otherwise>
+</choose>
+</parsingInstructions>
